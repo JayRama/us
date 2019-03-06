@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/Sia/crypto"
 	"gitlab.com/NebulousLabs/Sia/types"
+	"golang.org/x/crypto/ed25519"
 
 	"lukechampine.com/us/hostdb"
 	"lukechampine.com/us/merkle"
@@ -22,7 +23,7 @@ const (
 
 	// ContractHeaderSize is the size in bytes of the contract file header.
 	// It is also the offset at which the contract revision data begins.
-	ContractHeaderSize = 11 + 1 + 32 + 64
+	ContractHeaderSize = 11 + 1 + 32 + 32 + 32
 
 	// ContractRootOffset is the offset at which the sector Merkle
 	// roots of the contract are stored.
@@ -34,7 +35,7 @@ const (
 
 	// ContractVersion is the current version of the contract file format. It is
 	// incremented after each change to the format.
-	ContractVersion uint8 = 1
+	ContractVersion uint8 = 2
 )
 
 // ContractHeader contains the data encoded within the first
@@ -42,6 +43,7 @@ const (
 type ContractHeader struct {
 	magic   string
 	version uint8
+	hostKey hostdb.HostPublicKey
 	id      types.FileContractID
 	key     crypto.SecretKey
 }
@@ -52,7 +54,7 @@ func (h *ContractHeader) Validate() error {
 		return errors.Errorf("wrong magic bytes (%q)", h.magic)
 	}
 	if h.version != ContractVersion {
-		return errors.Errorf("wrong version (%d)", h.version)
+		return errors.Errorf("incompatible version (v%d): convert to v%d", h.version, ContractVersion)
 	}
 	return nil
 }
@@ -74,9 +76,19 @@ func (c *Contract) Close() error {
 	return c.f.Close()
 }
 
+// HostKey returns the public key of the contract's host.
+func (c *Contract) HostKey() hostdb.HostPublicKey {
+	return c.header.hostKey
+}
+
 // Revision returns the latest revision of the file contract.
 func (c *Contract) Revision() proto.ContractRevision {
 	return c.ContractRevision
+}
+
+// Key returns the renter's signing key.
+func (c *Contract) Key() proto.ContractKey {
+	return proto.Ed25519ContractKey(c.header.key)
 }
 
 // AppendRoot appends a sector root to the contract, returning the new
@@ -184,12 +196,14 @@ func (c *Contract) SyncWithHost(hostRevision types.FileContractRevision, hostSig
 	return nil
 }
 
-func marshalHeader(contract proto.ContractRevision) []byte {
+func marshalHeader(rev proto.ContractRevision, key crypto.SecretKey) []byte {
 	buf := bytes.NewBuffer(make([]byte, 0, ContractHeaderSize))
 	buf.WriteString(ContractMagic)
 	buf.WriteByte(ContractVersion)
-	buf.Write(contract.Revision.ParentID[:])
-	buf.Write(contract.RenterKey[:])
+	hpk := rev.HostKey().Ed25519()
+	buf.Write(hpk[:])
+	buf.Write(rev.Revision.ParentID[:])
+	buf.Write(key[:32])
 	return buf.Bytes()
 }
 
@@ -197,8 +211,11 @@ func unmarshalHeader(b []byte) (h ContractHeader) {
 	buf := bytes.NewBuffer(b)
 	h.magic = string(buf.Next(len(ContractMagic)))
 	h.version, _ = buf.ReadByte()
+	var hpk crypto.PublicKey
+	copy(hpk[:], buf.Next(32))
+	h.hostKey = hostdb.HostPublicKey(types.Ed25519PublicKey(hpk).String())
 	copy(h.id[:], buf.Next(32))
-	copy(h.key[:], buf.Next(64))
+	copy(h.key[:], ed25519.NewKeyFromSeed(buf.Next(32)))
 	return h
 }
 
@@ -235,14 +252,14 @@ func unmarshalStack(b []byte, stack *merkle.Stack) error {
 
 // SaveContract creates a new contract file using the provided contract. The
 // contract file will not contain any sector Merkle roots.
-func SaveContract(contract proto.ContractRevision, filename string) error {
+func SaveContract(contract proto.ContractRevision, key crypto.SecretKey, filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return errors.Wrap(err, "could not create contract file")
 	}
 	defer f.Close()
 	buf := make([]byte, ContractRootOffset)
-	copy(buf, marshalHeader(contract))
+	copy(buf, marshalHeader(contract, key))
 	copy(buf[ContractHeaderSize:], marshalRevision(contract))
 	if _, err := f.Write(buf); err != nil {
 		return errors.Wrap(err, "could not write contract header and revision")
@@ -262,7 +279,7 @@ func SaveRenewedContract(oldContract *Contract, newContract proto.ContractRevisi
 	defer f.Close()
 
 	// write header+revision+stack
-	if _, err := f.Write(marshalHeader(newContract)); err != nil {
+	if _, err := f.Write(marshalHeader(newContract, oldContract.header.key)); err != nil {
 		return errors.Wrap(err, "could not write contract header")
 	} else if _, err := f.WriteAt(marshalRevision(newContract), ContractHeaderSize); err != nil {
 		return errors.Wrap(err, "could not write contract revision")
@@ -323,10 +340,11 @@ func LoadContract(filename string) (*Contract, error) {
 		return nil, err
 	} else if !rev.IsValid() {
 		return nil, errors.New("contract revision is invalid")
+	} else if rev.HostKey() != header.hostKey {
+		return nil, errors.New("contract revision has wrong host public key")
 	} else if rev.ID() != header.id {
 		return nil, errors.New("contract revision has wrong ID")
 	}
-	rev.RenterKey = header.key
 	// decode stack
 	var stack merkle.Stack
 	err = unmarshalStack(b[ContractStackOffset:], &stack)
