@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
 	"gitlab.com/NebulousLabs/fastrand"
 	"github.com/JayRama/us/hostdb"
 	"github.com/JayRama/us/renter"

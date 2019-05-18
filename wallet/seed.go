@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"gitlab.com/siaprime/SiaPrime/modules"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 	mnemonics "gitlab.com/NebulousLabs/entropy-mnemonics"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/blake2b"

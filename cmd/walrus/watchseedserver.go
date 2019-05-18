@@ -7,10 +7,10 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"gitlab.com/siaprime/SiaPrime/crypto"
-	"gitlab.com/siaprime/SiaPrime/encoding"
-	"gitlab.com/siaprime/SiaPrime/modules"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/encoding"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 	"github.com/JayRama/us/cmd/walrus/api"
 	"github.com/JayRama/us/wallet"
 )

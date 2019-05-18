@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"sort"
 
-	"gitlab.com/siaprime/SiaPrime/modules"
-	"gitlab.com/siaprime/SiaPrime/persist"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/persist"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 )
 
 type shardPersist struct {

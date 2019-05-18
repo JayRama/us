@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/siaprime/SiaPrime/build"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/build"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 	"lukechampine.com/flagg"
 	"github.com/JayRama/us/hostdb"
 	"github.com/JayRama/us/renter"

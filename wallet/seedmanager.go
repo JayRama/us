@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"sync"
 
-	"gitlab.com/siaprime/SiaPrime/crypto"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 	"github.com/JayRama/us/internal/ed25519"
 )
 

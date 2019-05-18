@@ -17,7 +17,7 @@ import (
 	"crypto/sha512"
 	"strconv"
 
-	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
 	"github.com/JayRama/us/internal/ed25519/internal/edwards25519"
 )
 

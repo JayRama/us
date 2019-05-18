@@ -1,8 +1,8 @@
 package wallet
 
 import (
-	"gitlab.com/siaprime/SiaPrime/modules"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 )
 
 // A ChainScanner scans the blockchain for outputs and transactions relevant to

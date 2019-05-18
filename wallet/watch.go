@@ -3,8 +3,8 @@ package wallet
 import (
 	"sync"
 
-	"gitlab.com/siaprime/SiaPrime/modules"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 )
 
 // A WatchOnlyWallet is an unprivileged wallet that can track spendable outputs,

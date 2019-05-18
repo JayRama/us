@@ -2,7 +2,7 @@
 package merkle // import "github.com/JayRama/us/merkle"
 
 import (
-	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
 	"github.com/JayRama/us/renterhost"
 )
 

@@ -8,8 +8,8 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"gitlab.com/siaprime/SiaPrime/crypto"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/chacha20poly1305"

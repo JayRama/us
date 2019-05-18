@@ -4,7 +4,7 @@ import (
 	"math/bits"
 	"sort"
 
-	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
 	"github.com/JayRama/us/renterhost"
 )
 

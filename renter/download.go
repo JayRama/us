@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
 	"github.com/JayRama/us/hostdb"
 	"github.com/JayRama/us/merkle"
 	"github.com/JayRama/us/renter/proto"

@@ -3,7 +3,7 @@ package merkle
 import (
 	"math/bits"
 
-	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
 	"golang.org/x/crypto/blake2b"
 )
 

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/blake2b"
 	"github.com/JayRama/us/renterhost"

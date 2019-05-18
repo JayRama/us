@@ -5,10 +5,10 @@ import (
 	"io"
 	"time"
 
-	"gitlab.com/siaprime/SiaPrime/crypto"
-	"gitlab.com/siaprime/SiaPrime/encoding"
-	"gitlab.com/siaprime/SiaPrime/modules"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/encoding"
+	"gitlab.com/SiaPrime/SiaPrime/modules"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 	"golang.org/x/crypto/blake2b"
 )
 

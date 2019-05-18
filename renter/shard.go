@@ -8,7 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
-	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
 )
 
 // A SectorSlice is the unit element of a shard file. Each SectorSlice uniquely

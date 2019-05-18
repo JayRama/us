@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/SiaPrime/SiaPrime/crypto"
 	"gitlab.com/NebulousLabs/fastrand"
 	"github.com/JayRama/us/merkle"
 	"github.com/JayRama/us/renterhost"

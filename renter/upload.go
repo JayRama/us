@@ -2,7 +2,7 @@ package renter
 
 import (
 	"github.com/pkg/errors"
-	"gitlab.com/siaprime/SiaPrime/types"
+	"gitlab.com/SiaPrime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
 	"github.com/JayRama/us/hostdb"
 	"github.com/JayRama/us/merkle"
