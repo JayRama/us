@@ -7,7 +7,7 @@ import (
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/blake2b"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/renterhost"
 )
 
 func TestProofSize(t *testing.T) {

@@ -8,9 +8,9 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/internal/ed25519"
-	"github.com/jrama/us/renter/proto"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/internal/ed25519"
+	"github.com/JayRama/us/renter/proto"
 )
 
 const (

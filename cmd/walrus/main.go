@@ -14,7 +14,7 @@ import (
 	"gitlab.com/siaprime/SiaPrime/modules/transactionpool"
 	"golang.org/x/crypto/ssh/terminal"
 	"lukechampine.com/flagg"
-	"github.com/jrama/us/wallet"
+	"github.com/JayRama/us/wallet"
 )
 
 var (

@@ -11,8 +11,8 @@ import (
 	"gitlab.com/siaprime/SiaPrime/encoding"
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/cmd/walrus/api"
-	"github.com/jrama/us/wallet"
+	"github.com/JayRama/us/cmd/walrus/api"
+	"github.com/JayRama/us/wallet"
 )
 
 type watchSeedServer struct {

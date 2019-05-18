@@ -10,10 +10,10 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renter"
-	"github.com/jrama/us/renter/renterutil"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renter"
+	"github.com/JayRama/us/renter/renterutil"
+	"github.com/JayRama/us/renterhost"
 )
 
 func metainfo(m renter.MetaIndex, shards [][]renter.SectorSlice) {

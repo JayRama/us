@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
-	"github.com/jrama/us/cmd/walrus/api"
-	"github.com/jrama/us/wallet"
+	"github.com/JayRama/us/cmd/walrus/api"
+	"github.com/JayRama/us/wallet"
 )
 
 func gen(seed wallet.Seed, indexStr string) error {

@@ -1,9 +1,9 @@
 // Package merkle provides Sia-specific Merkle tree utilities.
-package merkle // import "github.com/jrama/us/merkle"
+package merkle // import "github.com/JayRama/us/merkle"
 
 import (
 	"gitlab.com/siaprime/SiaPrime/crypto"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/renterhost"
 )
 
 const (

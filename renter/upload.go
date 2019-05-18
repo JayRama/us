@@ -4,10 +4,10 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renter/proto"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renter/proto"
+	"github.com/JayRama/us/renterhost"
 )
 
 // A SectorBuilder facilitates the construction of sectors for later upload.

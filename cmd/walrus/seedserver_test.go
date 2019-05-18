@@ -18,8 +18,8 @@ import (
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/cmd/walrus/api"
-	"github.com/jrama/us/wallet"
+	"github.com/JayRama/us/cmd/walrus/api"
+	"github.com/JayRama/us/wallet"
 )
 
 type stubTpool struct{}

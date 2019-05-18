@@ -7,8 +7,8 @@ import (
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/renterhost"
 )
 
 // RenewContract negotiates a new file contract and initial revision for data

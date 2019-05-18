@@ -7,7 +7,7 @@ import (
 
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/internal/ed25519"
+	"github.com/JayRama/us/internal/ed25519"
 )
 
 const (

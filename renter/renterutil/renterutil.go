@@ -1,6 +1,6 @@
 // Package renterutil provides convenience functions for common renter
 // actions.
-package renterutil // import "github.com/jrama/us/renter/renterutil"
+package renterutil // import "github.com/JayRama/us/renter/renterutil"
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/renter/proto"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/renter/proto"
 )
 
 // assume metafiles have this extension

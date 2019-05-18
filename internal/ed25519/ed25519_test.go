@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"gitlab.com/siaprime/SiaPrime/crypto"
-	"github.com/jrama/us/internal/ed25519/internal/edwards25519"
+	"github.com/JayRama/us/internal/ed25519/internal/edwards25519"
 )
 
 func generateKey() (PublicKey, PrivateKey) {

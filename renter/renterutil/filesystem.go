@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/renter"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/renter"
 )
 
 var errInvalidFileDescriptor = errors.New("invalid file descriptor")

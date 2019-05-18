@@ -10,7 +10,7 @@ import (
 
 	"github.com/fatih/color"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/wallet"
+	"github.com/JayRama/us/wallet"
 )
 
 func vanity(seed wallet.Seed, substr string) {

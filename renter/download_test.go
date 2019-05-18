@@ -7,8 +7,8 @@ import (
 
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renterhost"
 )
 
 func TestCopySection(t *testing.T) {

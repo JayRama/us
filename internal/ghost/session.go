@@ -10,9 +10,9 @@ import (
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renterhost"
 )
 
 type session struct {

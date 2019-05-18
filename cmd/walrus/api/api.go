@@ -8,7 +8,7 @@ import (
 
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/wallet"
+	"github.com/JayRama/us/wallet"
 )
 
 // override transaction marshalling to use camelCase and stringified pubkeys and

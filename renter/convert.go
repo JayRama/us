@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	"github.com/jrama/us/renter/proto"
+	"github.com/JayRama/us/renter/proto"
 )
 
 const (

@@ -45,7 +45,7 @@ Here are some ideas for apps you could build with `us`:
 
 ## What do I need to get started?
 
-Run `go get github.com/jrama/us/...` to install `us` and its
+Run `go get github.com/JayRama/us/...` to install `us` and its
 dependencies. For subsequent builds, run `make`. No pre-built binaries
 are provided at this time.
 

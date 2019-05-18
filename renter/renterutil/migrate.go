@@ -10,10 +10,10 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renter"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renter"
+	"github.com/JayRama/us/renterhost"
 )
 
 // MigrateFile uploads file shards to a new set of hosts. The shards are

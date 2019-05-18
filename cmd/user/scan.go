@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/hostdb"
+	"github.com/JayRama/us/hostdb"
 )
 
 func currencyUnits(c types.Currency) string {

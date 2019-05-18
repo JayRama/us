@@ -13,8 +13,8 @@ import (
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/cmd/walrus/api"
-	"github.com/jrama/us/wallet"
+	"github.com/JayRama/us/cmd/walrus/api"
+	"github.com/JayRama/us/wallet"
 )
 
 func writeJSON(w io.Writer, v interface{}) {

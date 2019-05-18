@@ -11,8 +11,8 @@ import (
 	"github.com/aead/chacha20/chacha"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/xts"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renterhost"
 )
 
 func TestEncryption(t *testing.T) {

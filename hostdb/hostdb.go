@@ -1,5 +1,5 @@
 // Package hostdb defines types and functions relevant to scanning hosts.
-package hostdb // import "github.com/jrama/us/hostdb"
+package hostdb // import "github.com/JayRama/us/hostdb"
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/internal/ed25519"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/internal/ed25519"
+	"github.com/JayRama/us/renterhost"
 )
 
 // A HostPublicKey is the public key announced on the blockchain by a host. A

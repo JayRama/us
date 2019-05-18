@@ -10,10 +10,10 @@ import (
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/internal/ed25519"
-	"github.com/jrama/us/internal/ghost"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/internal/ed25519"
+	"github.com/JayRama/us/internal/ghost"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renterhost"
 )
 
 func deepEqual(a, b interface{}) bool {

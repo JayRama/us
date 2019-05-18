@@ -1,5 +1,5 @@
 // Package renter provides formats for contracts and files.
-package renter // import "github.com/jrama/us/renter"
+package renter // import "github.com/JayRama/us/renter"
 
 import (
 	"archive/tar"
@@ -16,9 +16,9 @@ import (
 	"github.com/aead/chacha20/chacha"
 	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/merkle"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/merkle"
+	"github.com/JayRama/us/renterhost"
 )
 
 const (

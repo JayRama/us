@@ -6,9 +6,9 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/renter"
-	"github.com/jrama/us/renter/proto"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/renter"
+	"github.com/JayRama/us/renter/proto"
 )
 
 var errNoHost = errors.New("no record of that host")

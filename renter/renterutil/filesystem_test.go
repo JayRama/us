@@ -12,12 +12,12 @@ import (
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"github.com/jrama/us/hostdb"
-	"github.com/jrama/us/internal/ed25519"
-	"github.com/jrama/us/internal/ghost"
-	"github.com/jrama/us/renter"
-	"github.com/jrama/us/renter/proto"
-	"github.com/jrama/us/renterhost"
+	"github.com/JayRama/us/hostdb"
+	"github.com/JayRama/us/internal/ed25519"
+	"github.com/JayRama/us/internal/ghost"
+	"github.com/JayRama/us/renter"
+	"github.com/JayRama/us/renter/proto"
+	"github.com/JayRama/us/renterhost"
 )
 
 type stubWallet struct{}

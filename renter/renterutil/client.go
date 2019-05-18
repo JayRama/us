@@ -16,8 +16,8 @@ import (
 	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/siaprime/SiaPrime/node/api/client"
 	"gitlab.com/siaprime/SiaPrime/types"
-	"github.com/jrama/us/cmd/walrus/api"
-	"github.com/jrama/us/hostdb"
+	"github.com/JayRama/us/cmd/walrus/api"
+	"github.com/JayRama/us/hostdb"
 )
 
 var errNoHostAnnouncement = errors.New("host announcement not found")
