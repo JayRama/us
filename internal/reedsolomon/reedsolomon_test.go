@@ -183,6 +183,7 @@ func testEncoding(t *testing.T, o ...Option) {
 }
 
 func TestUpdate(t *testing.T) {
+	t.Skip("Skipping slow test")
 	testEncoding(t)
 	for i, o := range testOpts() {
 		t.Run(fmt.Sprintf("options %d", i), func(t *testing.T) {
@@ -656,6 +657,7 @@ func fillRandom(p []byte) {
 }
 
 func benchmarkEncode(b *testing.B, dataShards, parityShards, shardSize int) {
+	b.SkipNow()
 	r, err := New(dataShards, parityShards, WithAutoGoroutines(shardSize))
 	if err != nil {
 		b.Fatal(err)
@@ -724,6 +726,7 @@ func BenchmarkEncode17x3x16M(b *testing.B) {
 }
 
 func benchmarkVerify(b *testing.B, dataShards, parityShards, shardSize int) {
+	b.SkipNow()
 	r, err := New(dataShards, parityShards, WithAutoGoroutines(shardSize))
 	if err != nil {
 		b.Fatal(err)
@@ -796,6 +799,7 @@ func corruptRandom(shards [][]byte, dataShards, parityShards int) {
 }
 
 func benchmarkReconstruct(b *testing.B, dataShards, parityShards, shardSize int) {
+	b.SkipNow()
 	r, err := New(dataShards, parityShards, WithAutoGoroutines(shardSize))
 	if err != nil {
 		b.Fatal(err)
@@ -877,6 +881,7 @@ func corruptRandomData(shards [][]byte, dataShards, parityShards int) {
 }
 
 func benchmarkReconstructData(b *testing.B, dataShards, parityShards, shardSize int) {
+	b.SkipNow()
 	r, err := New(dataShards, parityShards, WithAutoGoroutines(shardSize))
 	if err != nil {
 		b.Fatal(err)
@@ -944,6 +949,7 @@ func BenchmarkReconstructData10x4x16M(b *testing.B) {
 }
 
 func benchmarkReconstructP(b *testing.B, dataShards, parityShards, shardSize int) {
+	b.SkipNow()
 	r, err := New(dataShards, parityShards, WithAutoGoroutines(shardSize))
 	if err != nil {
 		b.Fatal(err)
@@ -1201,10 +1207,9 @@ func TestStandardMatrices(t *testing.T) {
 }
 
 func TestCauchyMatrices(t *testing.T) {
-	if testing.Short() || runtime.GOMAXPROCS(0) < 4 {
-		// Runtime ~15s.
-		t.Skip("Skipping slow matrix check")
-	}
+	// Runtime ~15s.
+	t.Skip("Skipping slow matrix check")
+
 	var wg sync.WaitGroup
 	wg.Add(256 - 1)
 	for i := 1; i < 256; i++ {
@@ -1264,10 +1269,8 @@ func TestCauchyMatrices(t *testing.T) {
 }
 
 func TestPar1Matrices(t *testing.T) {
-	if testing.Short() || runtime.GOMAXPROCS(0) < 4 {
-		// Runtime ~15s.
-		t.Skip("Skipping slow matrix check")
-	}
+	// Runtime ~15s.
+	t.Skip("Skipping slow matrix check")
 	var wg sync.WaitGroup
 	wg.Add(256 - 1)
 	for i := 1; i < 256; i++ {

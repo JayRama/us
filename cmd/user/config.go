@@ -12,10 +12,10 @@ var config struct {
 	SiadAddr           string `toml:"siad_addr"`
 	SiadPassword       string `toml:"siad_password"`
 	SHARDAddr          string `toml:"shard_addr"`
+	WalrusAddr         string `toml:"walrus_addr"`
 	ContractsAvailable string `toml:"contracts_available"`
 	ContractsEnabled   string `toml:"contracts_enabled"`
 	MinShards          int    `toml:"min_shards"`
-	LogFile            string `toml:"log_file"`
 }
 
 func loadConfig() error {

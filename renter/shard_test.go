@@ -35,7 +35,7 @@ func TestShard(t *testing.T) {
 			NumSegments:  uint32(fastrand.Uint64n(20)),
 		}
 		fastrand.Read(s.MerkleRoot[:])
-		fastrand.Read(s.Checksum[:])
+		fastrand.Read(s.Nonce[:])
 		slices[int64(fastrand.Intn(20))] = s
 	}
 	for index, s := range slices {

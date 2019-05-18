@@ -1,19 +1,19 @@
 package renterutil
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
+	"gitlab.com/NebulousLabs/Sia/types"
 	"lukechampine.com/us/hostdb"
 	"lukechampine.com/us/merkle"
 	"lukechampine.com/us/renter"
 	"lukechampine.com/us/renterhost"
-
-	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // MigrateFile uploads file shards to a new set of hosts. The shards are
@@ -138,8 +138,7 @@ func migrateFile(op *Operation, f *os.File, newcontracts renter.ContractSet, mig
 		if !ok {
 			panic("missing contract for host being migrated")
 		}
-		encryptionKey := m.EncryptionKey(m.HostIndex(hostKey))
-		hu, err := renter.NewShardUploader(m, encryptionKey, contract, hkr, currentHeight)
+		hu, err := renter.NewShardUploader(m, contract, hkr, currentHeight)
 		if err != nil {
 			op.die(err)
 			return
@@ -261,8 +260,7 @@ func migrateDirect(op *Operation, newcontracts, oldcontracts renter.ContractSet,
 		if !ok {
 			panic("newcontracts does not contain one of the hosts being migrated to")
 		}
-		encryptionKey := m.EncryptionKey(m.HostIndex(oldHostKey))
-		hu, err := renter.NewShardUploader(m, encryptionKey, newContract, hkr, currentHeight)
+		hu, err := renter.NewShardUploader(m, newContract, hkr, currentHeight)
 		if err != nil {
 			op.sendUpdate(MigrateSkipUpdate{Host: oldHostKey, Err: err})
 			continue
@@ -288,7 +286,7 @@ func migrateDirect(op *Operation, newcontracts, oldcontracts renter.ContractSet,
 	})
 
 	// migrate each old-new pair
-	var sector [renterhost.SectorSize]byte
+	var sectorBuf bytes.Buffer
 	for i := range oldhosts {
 		oldHost := oldhosts[i]
 		newHost := newhosts[i]
@@ -298,7 +296,12 @@ func migrateDirect(op *Operation, newcontracts, oldcontracts renter.ContractSet,
 				return
 			}
 			// download a sector
-			err := oldHost.Downloader.Sector(&sector, s.MerkleRoot)
+			sectorBuf.Reset()
+			err := oldHost.Downloader.Read(&sectorBuf, []renterhost.RPCReadRequestSection{{
+				MerkleRoot: s.MerkleRoot,
+				Offset:     0,
+				Length:     renterhost.SectorSize,
+			}})
 			if err != nil {
 				op.sendUpdate(MigrateSkipUpdate{Host: oldHost.HostKey(), Err: err})
 				total -= int64(len(oldHost.Slices[chunkIndex:])) * renterhost.SectorSize
@@ -306,7 +309,11 @@ func migrateDirect(op *Operation, newcontracts, oldcontracts renter.ContractSet,
 			}
 
 			// upload the sector to the new host
-			if _, err := newHost.Uploader.Upload(&sector); err != nil {
+			err = newHost.Uploader.Write([]renterhost.RPCWriteAction{{
+				Type: renterhost.RPCWriteActionAppend,
+				Data: sectorBuf.Bytes(),
+			}})
+			if err != nil {
 				op.sendUpdate(MigrateSkipUpdate{Host: oldHost.HostKey(), Err: err})
 				total -= int64(len(oldHost.Slices[chunkIndex:])) * renterhost.SectorSize
 				break
@@ -359,7 +366,7 @@ func migrateRemote(op *Operation, newcontracts, oldcontracts renter.ContractSet,
 		oldhosts[i] = bd
 	}
 	if len(m.Hosts)-len(errStrings) < m.MinShards {
-		op.die(errors.New("couldn't connect to enough hosts:\n" + strings.Join(errStrings, "\n")))
+		op.die(errors.New("could not connect to enough hosts:\n" + strings.Join(errStrings, "\n")))
 		return
 	}
 
@@ -375,8 +382,7 @@ func migrateRemote(op *Operation, newcontracts, oldcontracts renter.ContractSet,
 		if !ok {
 			panic("newcontracts does not contain one of the hosts being migrated to")
 		}
-		encryptionKey := m.EncryptionKey(m.HostIndex(oldHostKey))
-		hu, err := renter.NewShardUploader(m, encryptionKey, newContract, hkr, currentHeight)
+		hu, err := renter.NewShardUploader(m, newContract, hkr, currentHeight)
 		if err != nil {
 			op.die(err)
 			return

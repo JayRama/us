@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/Sia/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"golang.org/x/crypto/blake2b"
 	"lukechampine.com/us/hostdb"
 	"lukechampine.com/us/merkle"
 	"lukechampine.com/us/renter/proto"
@@ -31,54 +30,48 @@ func (sb *SectorBuilder) Reset() {
 }
 
 // Append appends data to the sector being constructed, encrypting it with the
-// given key and chunkIndex. The data is also padded with random bytes to the
-// nearest multiple of merkle.SegmentSize. Each call to Append creates a
-// SectorSlice that is accessible via the Slices method. This SectorSlice
-// reflects the length and checksum of the original (unpadded, unencrypted)
-// data.
+// given key and chunkIndex. The data must be a multiple of merkle.SegmentSize.
+//
+// Each call to Append creates a SectorSlice that is accessible via the Slices
+// method. This SectorSlice reflects the length and checksum of the original
+// (unencrypted) data.
 //
 // Append panics if len(data) > sb.Remaining().
-func (sb *SectorBuilder) Append(data []byte, key EncryptionKey, chunkIndex int64) {
-	// pad the data to a multiple of SegmentSize, which is required
-	// by the encryption scheme
-	var padding int
-	if mod := len(data) % merkle.SegmentSize; mod != 0 {
-		padding = merkle.SegmentSize - mod
+func (sb *SectorBuilder) Append(data []byte, key KeySeed) {
+	if len(data)%merkle.SegmentSize != 0 {
+		// NOTE: instead of panicking, we could silently pad the data; however,
+		// this is very dangerous, because the SectorSlice will not record the
+		// true size of the data, but rather the rounded-up number of segments.
+		// Padding is okay at the end of the file, since we can use the filesize
+		// to figure out how much padding was added, but padding in the middle
+		// of a file is almost certainly a developer error.
+		panic("len(data) must be a multiple of merkle.SegmentSize bytes")
 	}
-
-	if sb.sectorLen+len(data)+padding > renterhost.SectorSize {
-		// TODO: make this nicer?
+	if sb.sectorLen+len(data) > renterhost.SectorSize {
 		panic("data exceeds sector size")
 	}
 
-	// copy the data into the sector, adding random padding if necessary
-	sectorSlice := sb.sector[sb.sectorLen:][:len(data)+padding]
+	// copy the data into the sector
+	sectorSlice := sb.sector[sb.sectorLen:][:len(data)]
 	copy(sectorSlice, data)
-	fastrand.Read(sectorSlice[len(data):])
 
-	// encrypt the data+padding in place
-	//
-	// NOTE: to avoid reusing the same segment index for multiple encryptions,
-	// we use chunkIndex * SegmentsPerSector as the starting index. This is
-	// slightly wasteful, but the space is large enough that we can afford it.
-	// (In the worst case, a single byte of data is stored per chunkIndex; we
-	// can then store up to (2^64/SegmentsPerSector) = 2^48 bytes, or about
-	// 280 TB. In the average case, all but the final sector will be "full",
-	// so the waste is negligible.)
-	startIndex := uint64(chunkIndex * merkle.SegmentsPerSector)
-	key.EncryptSegments(sectorSlice, sectorSlice, startIndex)
+	// encrypt the data in place
+	segmentIndex := sb.sectorLen / merkle.SegmentSize
+	var nonce [24]byte
+	fastrand.Read(nonce[:])
+	key.XORKeyStream(sectorSlice, nonce[:], uint64(segmentIndex))
 
-	// update sectorLen and record the new slice
+	// record the new slice and update sectorLen
 	sb.slices = append(sb.slices, SectorSlice{
-		SegmentIndex: uint32(sb.sectorLen / merkle.SegmentSize),
+		SegmentIndex: uint32(segmentIndex),
 		NumSegments:  uint32(len(sectorSlice) / merkle.SegmentSize),
-		Checksum:     blake2b.Sum256(data),
+		Nonce:        nonce,
 	})
 	sb.sectorLen += len(sectorSlice)
 }
 
 // Len returns the number of bytes appended to the sector. Note that, due to
-// padding, it is not generally true that Len equals the sum of slices passed
+// padding, it is not guaranteed that Len equals the sum of the slices passed
 // to Append.
 func (sb *SectorBuilder) Len() int {
 	return sb.sectorLen
@@ -91,11 +84,15 @@ func (sb *SectorBuilder) Remaining() int {
 }
 
 // Finish fills the remaining capacity of the sector with random bytes and
-// returns it. The MerkleRoot field of each SectorSlice tracked by sb is set
-// to Merkle root of the resulting sector.
+// returns it. The MerkleRoot fields of the SectorSlices tracked by sb are
+// also set to the Merkle root of the resulting sector.
 //
 // After calling Finish, Len returns renterhost.SectorSize and Remaining
 // returns 0; no more data can be appended until Reset is called.
+//
+// Finish returns a pointer to sb's internal buffer, so the standard warnings
+// regarding such pointers apply. In particular, the pointer should not be
+// retained after Reset is called.
 func (sb *SectorBuilder) Finish() *[renterhost.SectorSize]byte {
 	fastrand.Read(sb.sector[sb.sectorLen:])
 	sb.sectorLen = len(sb.sector)
@@ -117,20 +114,23 @@ func (sb *SectorBuilder) Slices() []SectorSlice {
 	return sb.slices
 }
 
-// A ShardUploader wraps a proto.Uploader to provide SectorSlice-based data
+// A ShardUploader wraps a proto.Session to provide SectorSlice-based data
 // storage, transparently encrypting and checksumming all data before
 // transferring it to the host.
 type ShardUploader struct {
-	Uploader *proto.Uploader
+	Uploader *proto.Session
 	Shard    *Shard
-	Key      EncryptionKey
+	Key      KeySeed
 	Sector   SectorBuilder
 }
 
 // Upload uploads u.Sector, writing the resulting SectorSlice(s) to u.Shard,
 // starting at offset chunkIndex. Upload does not call Reset on u.Sector.
 func (u *ShardUploader) Upload(chunkIndex int64) error {
-	_, err := u.Uploader.Upload(u.Sector.Finish())
+	err := u.Uploader.Write([]renterhost.RPCWriteAction{{
+		Type: renterhost.RPCWriteActionAppend,
+		Data: u.Sector.Finish()[:],
+	}})
 	if err != nil {
 		return err
 	}
@@ -150,9 +150,8 @@ func (u *ShardUploader) EncryptAndUpload(data []byte, chunkIndex int64) (SectorS
 		return SectorSlice{}, errors.New("data exceeds sector size")
 	}
 	u.Sector.Reset()
-	u.Sector.Append(data, u.Key, chunkIndex)
-	err := u.Upload(chunkIndex)
-	if err != nil {
+	u.Sector.Append(data, u.Key)
+	if err := u.Upload(chunkIndex); err != nil {
 		return SectorSlice{}, err
 	}
 	slices := u.Sector.Slices()
@@ -176,7 +175,7 @@ func (u *ShardUploader) Close() error {
 
 // NewShardUploader connects to a host and returns a ShardUploader capable of
 // uploading m's data and writing to one of m's Shard files.
-func NewShardUploader(m *MetaFile, key EncryptionKey, contract *Contract, hkr HostKeyResolver, currentHeight types.BlockHeight) (*ShardUploader, error) {
+func NewShardUploader(m *MetaFile, contract *Contract, hkr HostKeyResolver, currentHeight types.BlockHeight) (*ShardUploader, error) {
 	hostKey := contract.HostKey()
 	// open shard
 	sf, err := OpenShard(m.ShardPath(hostKey))
@@ -190,7 +189,7 @@ func NewShardUploader(m *MetaFile, key EncryptionKey, contract *Contract, hkr Ho
 		return nil, errors.Wrapf(err, "%v: could not resolve host key", hostKey.ShortKey())
 	}
 	// create uploader
-	u, err := proto.NewUploader(hostIP, contract, currentHeight)
+	u, err := proto.NewSession(hostIP, contract, currentHeight)
 	if err != nil {
 		sf.Close()
 		return nil, errors.Wrapf(err, "%v: could not initiate upload protocol with host", hostKey.ShortKey())
@@ -198,6 +197,6 @@ func NewShardUploader(m *MetaFile, key EncryptionKey, contract *Contract, hkr Ho
 	return &ShardUploader{
 		Uploader: u,
 		Shard:    sf,
-		Key:      key,
+		Key:      m.MasterKey,
 	}, nil
 }

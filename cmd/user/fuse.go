@@ -1,23 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
-	"strings"
-
-	"github.com/pkg/errors"
-	"lukechampine.com/us/renter"
+	"sync"
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
+	"github.com/pkg/errors"
+	"lukechampine.com/us/renter"
+	"lukechampine.com/us/renter/renterutil"
 )
 
-func mount(contractDir, metaDir, mountDir string) error {
+func mount(contractDir, metaDir, mountDir string, minShards int) error {
 	contracts, err := renter.LoadContracts(contractDir)
 	if err != nil {
 		return errors.Wrap(err, "could not load contracts")
@@ -25,11 +24,12 @@ func mount(contractDir, metaDir, mountDir string) error {
 	defer contracts.Close()
 
 	c := makeLimitedClient()
-	downloaders, err := newDownloaderSet(contracts, c)
+	currentHeight, err := c.ChainHeight()
 	if err != nil {
-		return errors.Wrap(err, "could not connect to hosts")
+		return err
 	}
-	nfs := pathfs.NewPathNodeFs(fileSystem(metaDir, downloaders), nil)
+	pfs := renterutil.NewFileSystem(metaDir, contracts, c, currentHeight)
+	nfs := pathfs.NewPathNodeFs(fileSystem(pfs, minShards), nil)
 	server, _, err := nodefs.MountRoot(mountDir, nfs.Root(), nil)
 	if err != nil {
 		return errors.Wrap(err, "could not mount")
@@ -41,48 +41,57 @@ func mount(contractDir, metaDir, mountDir string) error {
 	signal.Notify(sigChan, os.Interrupt)
 	<-sigChan
 	log.Println("Unmounting...")
+	if err := pfs.Close(); err != nil {
+		log.Println("Error during close:", err)
+	}
 	return server.Unmount()
 }
 
-// PseudoFS implements a FUSE filesystem by downloading data from Sia hosts.
-type PseudoFS struct {
-	pathfs.FileSystem
-
-	root        string
-	downloaders *downloaderSet
+func errToStatus(op, name string, err error) fuse.Status {
+	if err == nil {
+		return fuse.OK
+	} else if os.IsNotExist(errors.Cause(err)) {
+		return fuse.ENOENT
+	}
+	log.Printf("%v %v: %v", op, name, err)
+	return fuse.EIO
 }
 
-// GetAttr implements the GetAttr method of pathfs.FileSystem.
-func (fs *PseudoFS) GetAttr(name string, _ *fuse.Context) (*fuse.Attr, fuse.Status) {
-	path := filepath.Join(fs.root, name)
-	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-		return &fuse.Attr{
-			Mode: fuse.S_IFDIR | 0755,
-		}, fuse.OK
-	} else if os.IsNotExist(err) {
-		path += metafileExt
-	}
-	index, err := renter.ReadMetaIndex(path)
+type fuseFS struct {
+	pathfs.FileSystem
+	pfs       *renterutil.PseudoFS
+	minShards int
+}
+
+// GetAttr implements pathfs.FileSystem.
+func (fs *fuseFS) GetAttr(name string, _ *fuse.Context) (*fuse.Attr, fuse.Status) {
+	stat, err := fs.pfs.Stat(name)
 	if err != nil {
-		return nil, fuse.ENOENT
+		return nil, errToStatus("GetAttr", name, err)
+	}
+	var mode uint32
+	if stat.IsDir() {
+		mode = fuse.S_IFDIR
+	} else {
+		mode = fuse.S_IFREG
 	}
 	return &fuse.Attr{
-		Size:  uint64(index.Filesize),
-		Mode:  fuse.S_IFREG | uint32(index.Mode),
-		Mtime: uint64(index.ModTime.Unix()),
+		Size:  uint64(stat.Size()),
+		Mode:  mode | uint32(stat.Mode()),
+		Mtime: uint64(stat.ModTime().Unix()),
 	}, fuse.OK
 }
 
-// OpenDir implements the OpenDir method of pathfs.FileSystem.
-func (fs *PseudoFS) OpenDir(name string, context *fuse.Context) ([]fuse.DirEntry, fuse.Status) {
-	path := filepath.Join(fs.root, name)
-	dir, err := os.Open(path)
+// OpenDir implements pathfs.FileSystem.
+func (fs *fuseFS) OpenDir(name string, _ *fuse.Context) ([]fuse.DirEntry, fuse.Status) {
+	dir, err := fs.pfs.Open(name)
 	if err != nil {
-		return nil, fuse.ENOENT
+		return nil, errToStatus("OpenDir", name, err)
 	}
+	defer dir.Close()
 	files, err := dir.Readdir(-1)
 	if err != nil {
-		return nil, fuse.ENOENT
+		return nil, errToStatus("OpenDir", name, err)
 	}
 	entries := make([]fuse.DirEntry, len(files))
 	for i, f := range files {
@@ -92,7 +101,6 @@ func (fs *PseudoFS) OpenDir(name string, context *fuse.Context) ([]fuse.DirEntry
 			mode |= fuse.S_IFDIR
 		} else {
 			mode |= fuse.S_IFREG
-			name = strings.TrimSuffix(name, metafileExt)
 		}
 		entries[i] = fuse.DirEntry{
 			Name: name,
@@ -102,45 +110,120 @@ func (fs *PseudoFS) OpenDir(name string, context *fuse.Context) ([]fuse.DirEntry
 	return entries, fuse.OK
 }
 
-// Open implements the Open method of pathfs.FileSystem.
-func (fs *PseudoFS) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
-	if flags&fuse.O_ANYWRITE != 0 {
-		return nil, fuse.EPERM
-	}
-
-	path := filepath.Join(fs.root, name) + metafileExt
-	hf, err := HTTPFile(path, fs.downloaders)
+// Open implements pathfs.FileSystem.
+func (fs *fuseFS) Open(name string, flags uint32, _ *fuse.Context) (file nodefs.File, code fuse.Status) {
+	flags &= fuse.O_ANYWRITE | uint32(os.O_APPEND)
+	pf, err := fs.pfs.OpenFile(name, int(flags), 0, fs.minShards)
 	if err != nil {
-		return nil, fuse.ENOENT
+		return nil, errToStatus("Open", name, err)
 	}
-
 	return &metaFSFile{
 		File: nodefs.NewDefaultFile(),
-		hf:   hf,
+		pf:   pf,
 	}, fuse.OK
 }
 
-// fileSystem returns a PseudoFS rooted at the specified root.
-func fileSystem(root string, downloaders *downloaderSet) *PseudoFS {
-	return &PseudoFS{
-		FileSystem:  pathfs.NewDefaultFileSystem(),
-		root:        root,
-		downloaders: downloaders,
+// Create implements pathfs.FileSystem.
+func (fs *fuseFS) Create(name string, flags uint32, mode uint32, _ *fuse.Context) (file nodefs.File, code fuse.Status) {
+	pf, err := fs.pfs.OpenFile(name, os.O_CREATE|os.O_TRUNC|os.O_RDWR, os.FileMode(mode), fs.minShards)
+	if err != nil {
+		return nil, errToStatus("Create", name, err)
+	}
+	return &metaFSFile{
+		File: nodefs.NewDefaultFile(),
+		pf:   pf,
+	}, fuse.OK
+}
+
+// Unlink implements pathfs.FileSystem.
+func (fs *fuseFS) Unlink(name string, _ *fuse.Context) (code fuse.Status) {
+	if err := fs.pfs.Remove(name); err != nil {
+		return errToStatus("Unlink", name, err)
+	}
+	return fuse.OK
+}
+
+// Rmdir implements pathfs.FileSystem.
+func (fs *fuseFS) Rmdir(name string, _ *fuse.Context) (code fuse.Status) {
+	if err := fs.pfs.RemoveAll(name); err != nil {
+		return errToStatus("Rmdir", name, err)
+	}
+	return fuse.OK
+}
+
+// Chmod implements pathfs.FileSystem.
+func (fs *fuseFS) Chmod(name string, mode uint32, context *fuse.Context) (code fuse.Status) {
+	if err := fs.pfs.Chmod(name, os.FileMode(mode)); err != nil {
+		return errToStatus("Chmod", name, err)
+	}
+	return fuse.OK
+}
+
+func fileSystem(pfs *renterutil.PseudoFS, minShards int) *fuseFS {
+	return &fuseFS{
+		FileSystem: pathfs.NewDefaultFileSystem(),
+		pfs:        pfs,
+		minShards:  minShards,
 	}
 }
 
 type metaFSFile struct {
 	nodefs.File
-	hf http.File
+	pf *renterutil.PseudoFile
+
+	mu      sync.Mutex
+	br      *bufio.Reader
+	lastOff int64
 }
 
 func (f *metaFSFile) Read(p []byte, off int64) (fuse.ReadResult, fuse.Status) {
-	if _, err := f.hf.Seek(off, io.SeekStart); err != nil {
-		return nil, fuse.ENOENT
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.br == nil || off != f.lastOff {
+		stat, _ := f.pf.Stat()
+		sr := io.NewSectionReader(f.pf, off, stat.Size()-off)
+		if f.br == nil {
+			f.br = bufio.NewReaderSize(sr, 1<<20) // 1 MB
+		} else {
+			f.br.Reset(sr)
+		}
 	}
-	n, err := f.hf.Read(p)
+	n, err := f.br.Read(p)
 	if err != nil && err != io.EOF {
-		return nil, fuse.ENOENT
+		return nil, errToStatus("Read", f.pf.Name(), err)
 	}
+	f.lastOff = off + int64(n)
 	return fuse.ReadResultData(p[:n]), fuse.OK
+}
+
+func (f *metaFSFile) Write(p []byte, off int64) (written uint32, code fuse.Status) {
+	n, err := f.pf.WriteAt(p, off)
+	if err != nil {
+		return 0, errToStatus("Write", f.pf.Name(), err)
+	}
+	return uint32(n), fuse.OK
+}
+
+func (f *metaFSFile) Truncate(size uint64) fuse.Status {
+	if err := f.pf.Truncate(int64(size)); err != nil {
+		return errToStatus("Truncate", f.pf.Name(), err)
+	}
+	return fuse.OK
+}
+
+func (f *metaFSFile) Flush() fuse.Status {
+	return fuse.OK
+}
+
+func (f *metaFSFile) Release() {
+	if err := f.pf.Close(); err != nil {
+		_ = errToStatus("Release", f.pf.Name(), err)
+	}
+}
+
+func (f *metaFSFile) Fsync(flags int) fuse.Status {
+	if err := f.pf.Sync(); err != nil {
+		return errToStatus("Fsync", f.pf.Name(), err)
+	}
+	return fuse.OK
 }

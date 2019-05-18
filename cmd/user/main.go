@@ -1,8 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"io"
+	"context"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,14 +10,16 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
-
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/renterutil"
+	"time"
 
 	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/Sia/build"
 	"gitlab.com/NebulousLabs/Sia/types"
 	"lukechampine.com/flagg"
+	"lukechampine.com/us/hostdb"
+	"lukechampine.com/us/renter"
+	"lukechampine.com/us/renter/proto"
+	"lukechampine.com/us/renter/renterutil"
 )
 
 var (
@@ -254,7 +255,34 @@ func check(ctx string, err error) {
 	}
 }
 
-func makeClient() *renterutil.SiadClient {
+type limitedClient interface {
+	Synced() (bool, error)
+	ChainHeight() (types.BlockHeight, error)
+	renter.HostKeyResolver
+}
+
+type fullClient interface {
+	limitedClient
+	proto.Wallet
+	proto.TransactionPool
+	Hosts() ([]hostdb.HostPublicKey, error)
+}
+
+type walrusSHARD struct {
+	*renterutil.WalrusClient
+	*renterutil.SHARDClient
+}
+
+// TODO: add truncated host key lookup to SHARD
+func (walrusSHARD) Hosts() ([]hostdb.HostPublicKey, error) {
+	return nil, errors.New("SHARD requires full-length host public keys")
+}
+
+func makeClient() fullClient {
+	// fullClient can be implemented by either siad or SHARD+walrus
+	if config.SHARDAddr != "" && config.WalrusAddr != "" {
+		return walrusSHARD{renterutil.NewWalrusClient(config.WalrusAddr), renterutil.NewSHARDClient(config.SHARDAddr)}
+	}
 	if config.SiadPassword == "" {
 		// attempt to read the standard siad password file
 		user, err := user.Current()
@@ -266,12 +294,6 @@ func makeClient() *renterutil.SiadClient {
 	return renterutil.NewSiadClient(config.SiadAddr, config.SiadPassword)
 }
 
-type limitedClient interface {
-	Synced() (bool, error)
-	ChainHeight() (types.BlockHeight, error)
-	renter.HostKeyResolver
-}
-
 func makeLimitedClient() limitedClient {
 	if config.SHARDAddr == "" {
 		return makeClient()
@@ -279,14 +301,14 @@ func makeLimitedClient() limitedClient {
 	return renterutil.NewSHARDClient(config.SHARDAddr)
 }
 
-func openLog() (io.Writer, func()) {
-	if config.LogFile != "" {
-		f, err := os.OpenFile(config.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		check("Could not open log file:", err)
-		bw := bufio.NewWriter(f)
-		return bw, func() { bw.Flush(); f.Close() }
+func scanHost(hkr renter.HostKeyResolver, pubkey hostdb.HostPublicKey) (hostdb.ScannedHost, error) {
+	addr, err := hkr.ResolveHostKey(pubkey)
+	if err != nil {
+		return hostdb.ScannedHost{}, err
 	}
-	return ioutil.Discard, func() {}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return hostdb.Scan(ctx, addr, pubkey)
 }
 
 func main() {
@@ -325,6 +347,7 @@ func main() {
 	serveCmd := flagg.New("serve", serveUsage)
 	sAddr := serveCmd.String("addr", ":8080", "HTTP service address")
 	mountCmd := flagg.New("mount", mountUsage)
+	mountCmd.IntVar(&config.MinShards, "m", config.MinShards, "minimum number of shards required to download files")
 	convertCmd := flagg.New("convert", convertUsage)
 
 	cmd := flagg.Parse(flagg.Tree{
@@ -361,7 +384,7 @@ func main() {
 		}
 		fallthrough
 	case versionCmd:
-		log.Printf("user v0.2.0\nCommit:     %s\nRelease:    %s\nGo version: %s %s/%s\nBuild Date: %s\n",
+		log.Printf("user v0.3.0\nCommit:     %s\nRelease:    %s\nGo version: %s %s/%s\nBuild Date: %s\n",
 			githash, build.Release, runtime.Version(), runtime.GOOS, runtime.GOARCH, builddate)
 
 	case scanCmd:
@@ -533,7 +556,7 @@ Define min_shards in your config file or supply the -m flag.`)
 			mountCmd.Usage()
 			return
 		}
-		err := mount(config.ContractsEnabled, args[0], args[1])
+		err := mount(config.ContractsEnabled, args[0], args[1], config.MinShards)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -543,6 +566,6 @@ Define min_shards in your config file or supply the -m flag.`)
 			convertCmd.Usage()
 			return
 		}
-		check("Conversion failed:", renter.ConvertContractV1V2(args[0]))
+		check("Conversion failed:", renter.ConvertContract(args[0]))
 	}
 }

@@ -2,19 +2,18 @@ package renterutil
 
 import (
 	"context"
+	"io/ioutil"
 	"runtime"
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/Sia/modules"
 	"gitlab.com/NebulousLabs/fastrand"
-
 	"lukechampine.com/us/hostdb"
 	"lukechampine.com/us/renter"
 	"lukechampine.com/us/renter/proto"
 	"lukechampine.com/us/renterhost"
-
-	"github.com/pkg/errors"
 )
 
 // A CheckupResult contains the result of a host checkup.
@@ -36,7 +35,7 @@ func Checkup(contracts renter.ContractSet, m *renter.MetaFile, hkr renter.HostKe
 
 func checkup(results chan<- CheckupResult, contracts renter.ContractSet, m *renter.MetaFile, hkr renter.HostKeyResolver) {
 	defer close(results)
-	for i, hostKey := range m.Hosts {
+	for _, hostKey := range m.Hosts {
 		res := CheckupResult{Host: hostKey}
 
 		contract, ok := contracts[hostKey]
@@ -71,7 +70,7 @@ func checkup(results chan<- CheckupResult, contracts renter.ContractSet, m *rent
 
 		// create downloader
 		start := time.Now()
-		d, err := proto.NewDownloader(hostIP, contract)
+		s, err := proto.NewSession(hostIP, contract, 0)
 		res.Latency = time.Since(start)
 		if err != nil {
 			res.Error = err
@@ -79,9 +78,9 @@ func checkup(results chan<- CheckupResult, contracts renter.ContractSet, m *rent
 			continue
 		}
 		h := renter.ShardDownloader{
-			Downloader: d,
+			Downloader: s,
 			Slices:     slices,
-			Key:        m.EncryptionKey(i),
+			Key:        m.MasterKey,
 		}
 
 		// download a random slice
@@ -89,7 +88,7 @@ func checkup(results chan<- CheckupResult, contracts renter.ContractSet, m *rent
 		start = time.Now()
 		data, err := h.DownloadAndDecrypt(chunk)
 		bandTime := time.Since(start)
-		d.Close()
+		h.Close()
 		if err != nil {
 			res.Error = errors.Wrap(err, "could not download slice")
 			results <- res
@@ -109,7 +108,8 @@ func CheckupContract(contract *renter.Contract, hkr renter.HostKeyResolver) Chec
 	hostKey := contract.HostKey()
 	res := CheckupResult{Host: hostKey}
 
-	if contract.NumSectors() == 0 {
+	numSectors := int(contract.Revision().Revision.NewFileSize / renterhost.SectorSize)
+	if numSectors == 0 {
 		res.Error = errors.New("no sectors stored on host")
 		return res
 	}
@@ -126,24 +126,30 @@ func CheckupContract(contract *renter.Contract, hkr renter.HostKeyResolver) Chec
 
 	// create downloader
 	start := time.Now()
-	d, err := proto.NewDownloader(hostIP, contract)
+	s, err := proto.NewSession(hostIP, contract, 0)
 	res.Latency = time.Since(start)
 	if err != nil {
 		res.Error = errors.Wrap(err, "could not initiate download protocol")
 		return res
 	}
+	defer s.Close()
 
-	// download a random sector
-	root, err := contract.SectorRoot(fastrand.Intn(contract.NumSectors()))
+	// request a random sector root
+	roots, err := s.SectorRoots(fastrand.Intn(numSectors), 1)
 	if err != nil {
 		res.Error = errors.Wrap(err, "could not get a sector to test")
 		return res
 	}
-	var sector [renterhost.SectorSize]byte
+	root := roots[0]
+
+	// download the sector
 	start = time.Now()
-	err = d.Sector(&sector, root)
+	err = s.Read(ioutil.Discard, []renterhost.RPCReadRequestSection{{
+		MerkleRoot: root,
+		Offset:     0,
+		Length:     renterhost.SectorSize,
+	}})
 	bandTime := time.Since(start)
-	d.Close()
 	if err != nil {
 		res.Error = errors.Wrap(err, "could not download sector")
 		return res

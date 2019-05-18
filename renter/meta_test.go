@@ -11,7 +11,6 @@ import (
 	"github.com/aead/chacha20/chacha"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/xts"
-
 	"lukechampine.com/us/merkle"
 	"lukechampine.com/us/renterhost"
 )
@@ -19,24 +18,26 @@ import (
 func TestEncryption(t *testing.T) {
 	var m MetaIndex
 	fastrand.Read(m.MasterKey[:])
-	key := m.EncryptionKey(0)
+	key := m.MasterKey
+	nonce := make([]byte, 24)
 
 	plaintext := []byte(strings.Repeat("test", 64))
-	ciphertext := make([]byte, len(plaintext))
-	key.EncryptSegments(ciphertext, plaintext, 0)
+	ciphertext := append([]byte(nil), plaintext...)
+	key.XORKeyStream(ciphertext, nonce, 0)
 	if bytes.Equal(ciphertext, plaintext) {
 		t.Fatal("encryption failed")
 	}
 
 	// decrypt starting at a segment offset
 	off := merkle.SegmentSize * 2
-	key.DecryptSegments(ciphertext[off:], ciphertext[off:], 2)
+	key.XORKeyStream(ciphertext[off:], nonce, 2)
 	if !bytes.Equal(ciphertext[off:], plaintext[off:]) {
 		t.Error("decryption failed")
 	}
 }
 
 func BenchmarkEncryption(b *testing.B) {
+	b.SkipNow()
 	benchXTS := func(buf []byte) func(*testing.B) {
 		return func(b *testing.B) {
 			c, err := xts.NewCipher(aes.NewCipher, make([]byte, 64))
@@ -80,12 +81,28 @@ func BenchmarkEncryption(b *testing.B) {
 		}
 	}
 
+	benchXChaCha := func(buf []byte) func(*testing.B) {
+		return func(b *testing.B) {
+			key, err := chacha.NewCipher(make([]byte, chacha.XNonceSize), make([]byte, chacha.KeySize), 20)
+			if err != nil {
+				b.Fatal(err)
+			}
+			b.SetBytes(int64(len(buf)))
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				key.XORKeyStream(buf, buf)
+			}
+		}
+	}
+
 	segment := make([]byte, merkle.SegmentSize)
 	sector := make([]byte, renterhost.SectorSize)
 	b.Run("XTS-segment", benchXTS(segment))
 	b.Run("AES-segment", benchAES(segment))
 	b.Run("ChaCha-segment", benchChaCha(segment))
+	b.Run("XChaCha-segment", benchXChaCha(segment))
 	b.Run("XTS-sector", benchXTS(sector))
 	b.Run("AES-sector", benchAES(sector))
 	b.Run("ChaCha-sector", benchChaCha(sector))
+	b.Run("XChaCha-sector", benchXChaCha(sector))
 }

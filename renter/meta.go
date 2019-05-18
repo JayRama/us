@@ -13,20 +13,18 @@ import (
 	"strings"
 	"time"
 
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renterhost"
-
 	"github.com/aead/chacha20/chacha"
 	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/fastrand"
-	"golang.org/x/crypto/blake2b"
+	"lukechampine.com/us/hostdb"
+	"lukechampine.com/us/merkle"
+	"lukechampine.com/us/renterhost"
 )
 
 const (
 	// MetaFileVersion is the current version of the metafile format. It is
 	// incremented after each change to the format.
-	MetaFileVersion = 1
+	MetaFileVersion = 2
 
 	indexFilename = "index"
 )
@@ -45,20 +43,21 @@ type MetaIndex struct {
 	Filesize  int64       // original file size
 	Mode      os.FileMode // mode bits
 	ModTime   time.Time   // set when Archive is called
-	MasterKey keySeed     // seed from which shard encryption keys are derived
+	MasterKey KeySeed     // seed from which shard encryption keys are derived
 	MinShards int         // number of shards required to recover file
 	Hosts     []hostdb.HostPublicKey
 }
 
-type keySeed [32]byte
+// A KeySeed derives subkeys and uses them to encrypt and decrypt messages.
+type KeySeed [32]byte
 
 // MarshalJSON implements the json.Marshaler interface.
-func (s keySeed) MarshalJSON() ([]byte, error) {
+func (s KeySeed) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + hex.EncodeToString(s[:]) + `"`), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
-func (s *keySeed) UnmarshalJSON(b []byte) error {
+func (s *KeySeed) UnmarshalJSON(b []byte) error {
 	if len(b) < 1 {
 		return errors.New("wrong seed length")
 	}
@@ -70,53 +69,23 @@ func (s *keySeed) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// An EncryptionKey can encrypt and decrypt segments, where each segment is a
-// []byte with len merkle.SegmentSize.
-type EncryptionKey interface {
-	EncryptSegments(ciphertext, plaintext []byte, startIndex uint64)
-	DecryptSegments(plaintext, ciphertext []byte, startIndex uint64)
-}
-
-// chachaKey implements EncryptionKey using ChaCha20.
-type chachaKey struct {
-	*chacha.Cipher
-}
-
-func (c chachaKey) EncryptSegments(ciphertext, plaintext []byte, startIndex uint64) {
-	if len(plaintext)%merkle.SegmentSize != 0 {
-		panic("plaintext must be a multiple of segment size")
-	} else if len(plaintext) != len(ciphertext) {
-		panic("plaintext and ciphertext must have same length")
+// XORKeyStream xors msg with the keystream derived from s, using startIndex as
+// the starting offset within the stream. The nonce must be 24 bytes.
+func (s *KeySeed) XORKeyStream(msg []byte, nonce []byte, startIndex uint64) {
+	if len(msg)%merkle.SegmentSize != 0 {
+		panic("message must be a multiple of segment size")
+	} else if len(nonce) != chacha.XNonceSize {
+		panic("nonce must be 24 bytes")
 	}
-	c.SetCounter(startIndex)
-	c.XORKeyStream(ciphertext, plaintext)
-}
-func (c chachaKey) DecryptSegments(plaintext, ciphertext []byte, startIndex uint64) {
-	c.EncryptSegments(plaintext, ciphertext, startIndex)
-}
-
-// EncryptionKey returns the encryption key used to encrypt sectors in a given
-// shard.
-func (m *MetaIndex) EncryptionKey(shardIndex int) EncryptionKey {
-	// We derive the per-shard encryption key as H(masterKey|shardIndex).
-	// Since there's no danger of reuse, we can use an arbitrary nonce.
-	//
-	// NOTE: as far as I can tell, this isn't any more secure than using
-	// m.MasterKey directly with shardIndex as the nonce. Deriving an entirely
-	// separate key only prevents an attacker who knows one key from deriving
-	// the others. But as long as ChaCha20 remains secure, this scenario is
-	// highly unlikely; protecting the master key is all that really matters.
-	// Still, I don't see any harm in deriving a separate key, and it's what
-	// Sia has always done, so we'll follow suit.
-	b := make([]byte, len(m.MasterKey)+8)
-	copy(b, m.MasterKey[:])
-	binary.LittleEndian.PutUint64(b[len(m.MasterKey):], uint64(shardIndex))
-	key := blake2b.Sum256(b)
-	c, err := chacha.NewCipher(make([]byte, chacha.NonceSize), key[:], 20)
+	// NOTE: since we're using XChaCha20, the nonce and KeySeed are hashed
+	// together to produce a subkey; this is why s is referred to as a "seed"
+	// rather than a key in its own right.
+	c, err := chacha.NewCipher(nonce, s[:], 20)
 	if err != nil {
 		panic(err)
 	}
-	return chachaKey{c}
+	c.SetCounter(startIndex)
+	c.XORKeyStream(msg, msg)
 }
 
 // MaxChunkSize returns the maximum amount of file data that can fit into a
@@ -127,6 +96,13 @@ func (m *MetaIndex) EncryptionKey(shardIndex int) EncryptionKey {
 // chunk size used in the shard files of m.
 func (m *MetaIndex) MaxChunkSize() int64 {
 	return renterhost.SectorSize * int64(m.MinShards)
+}
+
+// MinChunkSize is the size of the smallest possible chunk. When this chunk is
+// erasure-encoded into shards, each shard will have a length of
+// merkle.SegmentSize.
+func (m *MetaIndex) MinChunkSize() int64 {
+	return merkle.SegmentSize * int64(m.MinShards)
 }
 
 // MinChunks returns the minimum number of chunks required to fully upload the
@@ -176,9 +152,6 @@ func (m *MetaFile) Archive(filename string) error {
 	defer f.Close()
 	zip := gzip.NewWriter(f)
 	tw := tar.NewWriter(zip)
-
-	// set ModTime
-	m.ModTime = time.Now()
 
 	// write index
 	index, _ := json.Marshal(m.MetaIndex)

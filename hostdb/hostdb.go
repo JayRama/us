@@ -4,15 +4,17 @@ package hostdb // import "lukechampine.com/us/hostdb"
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"net"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/encoding"
 	"gitlab.com/NebulousLabs/Sia/modules"
 	"gitlab.com/NebulousLabs/Sia/types"
+	"lukechampine.com/us/internal/ed25519"
+	"lukechampine.com/us/renterhost"
 )
 
 // A HostPublicKey is the public key announced on the blockchain by a host. A
@@ -46,17 +48,25 @@ func (hpk HostPublicKey) ShortKey() string {
 	return hpk.Key()[:8]
 }
 
-// Ed25519 returns the HostPublicKey as a crypto.PublicKey. The returned key
+// Ed25519 returns the HostPublicKey as an ed25519.PublicKey. The returned key
 // is invalid if hpk is not a Ed25519 key.
-func (hpk HostPublicKey) Ed25519() (cpk crypto.PublicKey) {
-	hex.Decode(cpk[:], []byte(hpk.Key()))
-	return
+func (hpk HostPublicKey) Ed25519() ed25519.PublicKey {
+	pk, _ := hex.DecodeString(hpk.Key())
+	return ed25519.PublicKey(pk)
 }
 
 // SiaPublicKey returns the HostPublicKey as a types.SiaPublicKey.
 func (hpk HostPublicKey) SiaPublicKey() (spk types.SiaPublicKey) {
 	spk.LoadString(string(hpk))
 	return
+}
+
+// VerifyHash verifies that hash was signed by the public key.
+func (hpk HostPublicKey) VerifyHash(hash crypto.Hash, sig []byte) bool {
+	if !strings.HasPrefix(string(hpk), "ed25519") {
+		panic("unsupported signature algorithm")
+	}
+	return hpk.Ed25519().VerifyHash(hash, sig)
 }
 
 // HostSettings are the settings reported by a host.
@@ -73,8 +83,10 @@ type HostSettings struct {
 	WindowSize             types.BlockHeight
 	Collateral             types.Currency
 	MaxCollateral          types.Currency
+	BaseRPCPrice           types.Currency
 	ContractPrice          types.Currency
 	DownloadBandwidthPrice types.Currency
+	SectorAccessPrice      types.Currency
 	StoragePrice           types.Currency
 	UploadBandwidthPrice   types.Currency
 	RevisionNumber         uint64
@@ -106,13 +118,22 @@ func Scan(ctx context.Context, addr modules.NetAddress, pubkey HostPublicKey) (h
 	}
 	ch := make(chan res, 1)
 	go func() {
-		err = encoding.WriteObject(conn, modules.RPCSettings)
-		if err != nil {
-			ch <- res{host, errors.Wrap(err, "could not write RPC header")}
-			return
-		}
-		const maxSettingsLen = 2e3
-		err = crypto.ReadSignedObject(conn, &host.HostSettings, maxSettingsLen, pubkey.Ed25519())
+		err := func() error {
+			s, err := renterhost.NewRenterSession(conn, pubkey)
+			if err != nil {
+				return errors.Wrap(err, "could not initiate RPC session")
+			}
+			defer s.Close()
+			var resp renterhost.RPCSettingsResponse
+			if err := s.WriteRequest(renterhost.RPCSettingsID, nil); err != nil {
+				return err
+			} else if err := s.ReadResponse(&resp, 4096); err != nil {
+				return err
+			} else if err := json.Unmarshal(resp.Settings, &host.HostSettings); err != nil {
+				return err
+			}
+			return nil
+		}()
 		ch <- res{host, errors.Wrap(err, "could not read signed host settings")}
 	}()
 	select {

@@ -4,17 +4,13 @@ package proto // import "lukechampine.com/us/renter/proto"
 import (
 	"time"
 
+	"github.com/pkg/errors"
 	"gitlab.com/NebulousLabs/Sia/crypto"
 	"gitlab.com/NebulousLabs/Sia/modules"
 	"gitlab.com/NebulousLabs/Sia/types"
 	"lukechampine.com/us/hostdb"
-
-	"github.com/pkg/errors"
+	"lukechampine.com/us/internal/ed25519"
 )
-
-// ErrDesynchronized is returned by ContractEditor.SyncWithHost to indicate
-// that synchronization is impossible.
-var ErrDesynchronized = errors.New("renter contract has permanently desynchronized from host")
 
 type (
 	// A Wallet provides addresses and outputs, and can sign transactions.
@@ -32,26 +28,6 @@ type (
 	}
 )
 
-// A ContractKey is a keypair that can sign revisions.
-type ContractKey interface {
-	SignHash(hash crypto.Hash) []byte
-	PublicKey() types.SiaPublicKey
-}
-
-// Ed25519ContractKey implements ContractKey with an ed25519 keypair.
-type Ed25519ContractKey crypto.SecretKey
-
-// SignHash implements ContractKey.
-func (e Ed25519ContractKey) SignHash(hash crypto.Hash) []byte {
-	sig := crypto.SignHash(hash, crypto.SecretKey(e))
-	return sig[:]
-}
-
-// PublicKey implements ContractKey.
-func (e Ed25519ContractKey) PublicKey() types.SiaPublicKey {
-	return types.Ed25519PublicKey(crypto.SecretKey(e).PublicKey())
-}
-
 // A ContractEditor provides an interface for viewing and updating a file
 // contract transaction and the Merkle roots of each sector covered by the
 // contract.
@@ -59,26 +35,16 @@ type ContractEditor interface {
 	// Revision returns the latest revision of the file contract.
 	Revision() ContractRevision
 
+	// SetRevision sets the current revision of the file contract. The revision
+	// signatures do not need to be verified.
+	SetRevision(rev ContractRevision) error
+
 	// Key returns the renter's signing key.
-	Key() ContractKey
-
-	// AppendRoot appends a sector root to the contract, returning the new
-	// top-level Merkle root. The root should be written to durable storage.
-	AppendRoot(root crypto.Hash) (crypto.Hash, error)
-
-	// NumSectors returns the number of sector roots in the contract.
-	NumSectors() int
-
-	// SyncWithHost synchronizes the local version of the contract with the
-	// host's version. This may involve modifying the sector roots and/or
-	// contract revision. SyncWithHost returns ErrDesynchronized iff the
-	// contract has permanently desynchronized with the host and recovery is
-	// impossible.
-	SyncWithHost(rev types.FileContractRevision, hostSignatures []types.TransactionSignature) error
+	Key() ed25519.PrivateKey
 }
 
 // A ContractRevision contains the most recent revision to a file contract and
-// the secret key used to sign it.
+// its signatures.
 type ContractRevision struct {
 	Revision   types.FileContractRevision
 	Signatures [2]types.TransactionSignature

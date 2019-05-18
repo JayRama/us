@@ -11,15 +11,17 @@ import (
 	"text/tabwriter"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/crypto"
 	"gitlab.com/NebulousLabs/Sia/types"
-
+	"gitlab.com/NebulousLabs/fastrand"
 	"lukechampine.com/us/hostdb"
+	"lukechampine.com/us/internal/ed25519"
 	"lukechampine.com/us/renter"
 	"lukechampine.com/us/renter/proto"
 	"lukechampine.com/us/renter/renterutil"
 	"lukechampine.com/us/renterhost"
 )
+
+const contractExt = ".contract"
 
 func contractinfo(contract proto.ContractRevision) {
 	c := makeClient()
@@ -58,7 +60,7 @@ func listcontracts() error {
 	}
 	enabled := make(map[string]struct{})
 	for _, name := range filenames {
-		if filepath.Ext(name) != ".contract" {
+		if filepath.Ext(name) != contractExt {
 			continue
 		}
 		enabled[name] = struct{}{}
@@ -84,7 +86,7 @@ func listcontracts() error {
 	}
 	var entries []entry
 	for _, name := range filenames {
-		if filepath.Ext(name) != ".contract" {
+		if filepath.Ext(name) != contractExt {
 			// skip archived contracts and other files
 			continue
 		}
@@ -142,7 +144,7 @@ func form(hostKeyPrefix string, funds types.Currency, end string, filename strin
 	if err != nil {
 		return errors.Wrap(err, "could not lookup host")
 	}
-	host, err := c.Scan(hostKey)
+	host, err := scanHost(c, hostKey)
 	if err != nil {
 		return errors.Wrap(err, "could not scan host")
 	}
@@ -173,8 +175,7 @@ func form(hostKeyPrefix string, funds types.Currency, end string, filename strin
 	}
 
 	// generate our contract key and execute the protocol
-	ourSK, _ := crypto.GenerateKeyPair()
-	key := proto.Ed25519ContractKey(ourSK)
+	key := ed25519.NewKeyFromSeed(fastrand.Bytes(32))
 	contract, err := proto.FormContract(c, c, key, host, funds, currentHeight, endHeight)
 	if err != nil {
 		return err
@@ -185,7 +186,7 @@ func form(hostKeyPrefix string, funds types.Currency, end string, filename strin
 	}
 	allPath := filepath.Join(config.ContractsAvailable, filename)
 	activePath := filepath.Join(config.ContractsEnabled, filename)
-	err = renter.SaveContract(contract, ourSK, allPath)
+	err = renter.SaveContract(contract, key, allPath)
 	if err != nil {
 		return errors.Wrap(err, "could not save contract")
 	}
@@ -217,7 +218,7 @@ func renew(contractPath string, funds types.Currency, end string, filename strin
 		return err
 	}
 
-	host, err := c.Scan(uc.HostKey())
+	host, err := scanHost(c, uc.HostKey())
 	if err != nil {
 		return errors.Wrap(err, "could not scan host")
 	}
@@ -314,7 +315,7 @@ func checkupContract(contractPath string) error {
 	}
 	defer contract.Close()
 
-	c := makeClient()
+	c := makeLimitedClient()
 	r := renterutil.CheckupContract(contract, c)
 	if r.Error != nil {
 		fmt.Printf("FAIL Host %v:\n\t%v\n", r.Host.ShortKey(), r.Error)
@@ -381,7 +382,7 @@ func enableContract(hostKey string) error {
 	}
 	var contractName string
 	for _, name := range filenames {
-		if filepath.Ext(name) != ".contract" {
+		if filepath.Ext(name) != contractExt {
 			// skip archived contracts and other files
 			continue
 		}
@@ -465,7 +466,7 @@ func loadMetaContracts(m *renter.MetaFile, dir string) (renter.ContractSet, erro
 	}
 	hostContractMapping := make(map[hostdb.HostPublicKey]string)
 	for _, name := range filenames {
-		if filepath.Ext(name) != ".contract" {
+		if filepath.Ext(name) != contractExt {
 			// skip archived contracts and other files
 			continue
 		}
