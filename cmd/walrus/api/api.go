@@ -6,9 +6,9 @@ import (
 	"time"
 	"unsafe"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/wallet"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/wallet"
 )
 
 // override transaction marshalling to use camelCase and stringified pubkeys and

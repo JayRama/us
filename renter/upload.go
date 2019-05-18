@@ -2,12 +2,12 @@ package renter
 
 import (
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renter/proto"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renter/proto"
+	"github.com/jrama/us/renterhost"
 )
 
 // A SectorBuilder facilitates the construction of sectors for later upload.

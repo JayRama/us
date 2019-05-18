@@ -8,16 +8,16 @@ import (
 	"path/filepath"
 	"testing"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/internal/ed25519"
-	"lukechampine.com/us/internal/ghost"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/proto"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/internal/ed25519"
+	"github.com/jrama/us/internal/ghost"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/proto"
+	"github.com/jrama/us/renterhost"
 )
 
 type stubWallet struct{}

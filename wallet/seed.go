@@ -5,12 +5,12 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
 	mnemonics "gitlab.com/NebulousLabs/entropy-mnemonics"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/blake2b"
-	"lukechampine.com/us/internal/ed25519"
+	"github.com/jrama/us/internal/ed25519"
 )
 
 // A Seed generates addresses deterministically from some initial entropy.

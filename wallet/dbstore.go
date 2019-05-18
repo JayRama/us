@@ -7,9 +7,9 @@ import (
 	"time"
 
 	bolt "github.com/coreos/bbolt"
-	"gitlab.com/NebulousLabs/Sia/encoding"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/encoding"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
 )
 
 // database buckets/keys

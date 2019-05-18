@@ -12,8 +12,8 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
 	"github.com/pkg/errors"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/renterutil"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/renterutil"
 )
 
 func mount(contractDir, metaDir, mountDir string, minShards int) error {

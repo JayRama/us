@@ -5,10 +5,10 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renterhost"
 )
 
 func TestCopySection(t *testing.T) {

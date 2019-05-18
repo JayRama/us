@@ -11,14 +11,14 @@ import (
 	"text/tabwriter"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/internal/ed25519"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/proto"
-	"lukechampine.com/us/renter/renterutil"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/internal/ed25519"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/proto"
+	"github.com/jrama/us/renter/renterutil"
+	"github.com/jrama/us/renterhost"
 )
 
 const contractExt = ".contract"

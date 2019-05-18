@@ -3,7 +3,7 @@ package proto
 import (
 	"testing"
 
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
 )
 

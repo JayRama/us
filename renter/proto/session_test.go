@@ -5,15 +5,15 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/encoding"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/encoding"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/internal/ed25519"
-	"lukechampine.com/us/internal/ghost"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/internal/ed25519"
+	"github.com/jrama/us/internal/ghost"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renterhost"
 )
 
 func deepEqual(a, b interface{}) bool {

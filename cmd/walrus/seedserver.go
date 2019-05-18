@@ -10,11 +10,11 @@ import (
 	"unsafe"
 
 	"github.com/julienschmidt/httprouter"
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/cmd/walrus/api"
-	"lukechampine.com/us/wallet"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/cmd/walrus/api"
+	"github.com/jrama/us/wallet"
 )
 
 func writeJSON(w io.Writer, v interface{}) {

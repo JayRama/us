@@ -11,13 +11,13 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/encoding"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/node/api/client"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/cmd/walrus/api"
-	"lukechampine.com/us/hostdb"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/encoding"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/node/api/client"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/cmd/walrus/api"
+	"github.com/jrama/us/hostdb"
 )
 
 var errNoHostAnnouncement = errors.New("host announcement not found")

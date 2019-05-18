@@ -1,5 +1,5 @@
 // Package hostdb defines types and functions relevant to scanning hosts.
-package hostdb // import "lukechampine.com/us/hostdb"
+package hostdb // import "github.com/jrama/us/hostdb"
 
 import (
 	"context"
@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/internal/ed25519"
-	"lukechampine.com/us/renterhost"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/internal/ed25519"
+	"github.com/jrama/us/renterhost"
 )
 
 // A HostPublicKey is the public key announced on the blockchain by a host. A

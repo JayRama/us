@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/internal/ed25519"
-	"lukechampine.com/us/renter/proto"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/internal/ed25519"
+	"github.com/jrama/us/renter/proto"
 )
 
 const (

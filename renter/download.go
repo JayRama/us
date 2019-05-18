@@ -5,11 +5,11 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renter/proto"
-	"lukechampine.com/us/renterhost"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renter/proto"
+	"github.com/jrama/us/renterhost"
 )
 
 // ErrBadChecksum indicates that a piece of sector data failed checksum

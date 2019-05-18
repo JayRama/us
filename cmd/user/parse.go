@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/types"
 )
 
 // assume metafiles have this extension

@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/siaprime/SiaPrime/modules"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/proto"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/proto"
+	"github.com/jrama/us/renterhost"
 )
 
 // A CheckupResult contains the result of a host checkup.

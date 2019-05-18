@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"lukechampine.com/us/internal/reedsolomon"
-	"lukechampine.com/us/merkle"
+	"github.com/jrama/us/internal/reedsolomon"
+	"github.com/jrama/us/merkle"
 )
 
 // An ErasureCoder encodes and decodes data to/from a set of shards. The

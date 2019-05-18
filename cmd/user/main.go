@@ -13,13 +13,13 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/build"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/build"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"lukechampine.com/flagg"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/proto"
-	"lukechampine.com/us/renter/renterutil"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/proto"
+	"github.com/jrama/us/renter/renterutil"
 )
 
 var (
@@ -287,7 +287,7 @@ func makeClient() fullClient {
 		// attempt to read the standard siad password file
 		user, err := user.Current()
 		check("Could not locate siad password file:", err)
-		pw, err := ioutil.ReadFile(filepath.Join(user.HomeDir, ".sia", "apipassword"))
+		pw, err := ioutil.ReadFile(filepath.Join(user.HomeDir, ".siaprime", "apipassword"))
 		check("Could not read siad password file:", err)
 		config.SiadPassword = strings.TrimSpace(string(pw))
 	}

@@ -10,9 +10,9 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"gitlab.com/NebulousLabs/Sia/build"
-	"gitlab.com/NebulousLabs/Sia/modules/consensus"
-	"gitlab.com/NebulousLabs/Sia/modules/gateway"
+	"gitlab.com/siaprime/SiaPrime/build"
+	"gitlab.com/siaprime/SiaPrime/modules/consensus"
+	"gitlab.com/siaprime/SiaPrime/modules/gateway"
 )
 
 type server struct {

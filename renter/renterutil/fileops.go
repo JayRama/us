@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renterhost"
 )
 
 // helper type that skips a prefix of the bytes written to it; used to trim

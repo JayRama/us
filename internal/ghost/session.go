@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renterhost"
 )
 
 type session struct {

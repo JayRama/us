@@ -1,6 +1,6 @@
 // Package renterhost implements the handshake and transport for the Sia
 // renter-host protocol.
-package renterhost // import "lukechampine.com/us/renterhost"
+package renterhost // import "github.com/jrama/us/renterhost"
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/chacha20poly1305"

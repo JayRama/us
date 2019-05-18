@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/siaprime/SiaPrime/crypto"
 	"gitlab.com/NebulousLabs/fastrand"
 	"golang.org/x/crypto/blake2b"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/renterhost"
 )
 
 func TestProofSize(t *testing.T) {

@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh/terminal"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/renterutil"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/renterutil"
+	"github.com/jrama/us/renterhost"
 )
 
 type trackWriter struct {

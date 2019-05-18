@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/renter"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/renter"
 )
 
 var errInvalidFileDescriptor = errors.New("invalid file descriptor")

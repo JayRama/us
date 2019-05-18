@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"gitlab.com/NebulousLabs/Sia/build"
-	"gitlab.com/NebulousLabs/Sia/modules/consensus"
-	"gitlab.com/NebulousLabs/Sia/modules/gateway"
-	"gitlab.com/NebulousLabs/Sia/modules/transactionpool"
+	"gitlab.com/siaprime/SiaPrime/build"
+	"gitlab.com/siaprime/SiaPrime/modules/consensus"
+	"gitlab.com/siaprime/SiaPrime/modules/gateway"
+	"gitlab.com/siaprime/SiaPrime/modules/transactionpool"
 	"golang.org/x/crypto/ssh/terminal"
 	"lukechampine.com/flagg"
-	"lukechampine.com/us/wallet"
+	"github.com/jrama/us/wallet"
 )
 
 var (

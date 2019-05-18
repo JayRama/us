@@ -1,8 +1,8 @@
 package wallet
 
 import (
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
 )
 
 // A ChainScanner scans the blockchain for outputs and transactions relevant to

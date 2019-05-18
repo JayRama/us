@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renterhost"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renterhost"
 )
 
 // MigrateFile uploads file shards to a new set of hosts. The shards are

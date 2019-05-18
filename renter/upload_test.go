@@ -3,7 +3,7 @@ package renter
 import (
 	"testing"
 
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/renterhost"
 )
 
 func BenchmarkIdealUpload(b *testing.B) {

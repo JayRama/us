@@ -4,9 +4,9 @@ import (
 	"math/big"
 	"unsafe"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/internal/ed25519"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/internal/ed25519"
 )
 
 // BytesPerInput is the encoded size of a SiacoinInput and corresponding

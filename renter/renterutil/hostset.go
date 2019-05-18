@@ -5,10 +5,10 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/proto"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/proto"
 )
 
 var errNoHost = errors.New("no record of that host")

@@ -3,8 +3,8 @@ package wallet
 import (
 	"time"
 
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
 )
 
 // EphemeralStore implements Store in-memory.

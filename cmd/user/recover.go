@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"lukechampine.com/us/renter"
+	"github.com/jrama/us/renter"
 )
 
 func exists(path string) bool {

@@ -1,15 +1,15 @@
 // Package proto implements the renter side of the Sia renter-host protocol.
-package proto // import "lukechampine.com/us/renter/proto"
+package proto // import "github.com/jrama/us/renter/proto"
 
 import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/hostdb"
-	"lukechampine.com/us/internal/ed25519"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/hostdb"
+	"github.com/jrama/us/internal/ed25519"
 )
 
 type (

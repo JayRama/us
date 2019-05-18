@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/merkle"
-	"lukechampine.com/us/renterhost"
+	"github.com/jrama/us/merkle"
+	"github.com/jrama/us/renterhost"
 )
 
 func encodeAlloc(rsc ErasureCoder, data []byte) [][]byte {

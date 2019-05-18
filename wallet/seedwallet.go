@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"gitlab.com/NebulousLabs/Sia/modules"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/modules"
+	"gitlab.com/siaprime/SiaPrime/types"
 )
 
 // A SeedAddressInfo contains the unlock conditions and key index for an

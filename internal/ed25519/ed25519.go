@@ -17,8 +17,8 @@ import (
 	"crypto/sha512"
 	"strconv"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"lukechampine.com/us/internal/ed25519/internal/edwards25519"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"github.com/jrama/us/internal/ed25519/internal/edwards25519"
 )
 
 const (

@@ -4,8 +4,8 @@ import (
 	"math/bits"
 	"sort"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"lukechampine.com/us/renterhost"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"github.com/jrama/us/renterhost"
 )
 
 // ProofSize returns the size of a Merkle proof for the leaf range [start, end)

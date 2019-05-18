@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/NebulousLabs/Sia/crypto"
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/crypto"
+	"gitlab.com/siaprime/SiaPrime/types"
 	"gitlab.com/NebulousLabs/fastrand"
-	"lukechampine.com/us/cmd/walrus/api"
-	"lukechampine.com/us/wallet"
+	"github.com/jrama/us/cmd/walrus/api"
+	"github.com/jrama/us/wallet"
 )
 
 func TestWatchSeedServer(t *testing.T) {

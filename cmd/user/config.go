@@ -35,7 +35,7 @@ func loadConfig() error {
 	}
 	// set defaults
 	if config.SiadAddr == "" {
-		config.SiadAddr = "localhost:9980"
+		config.SiadAddr = "localhost:4280"
 	}
 	if config.ContractsAvailable == "" {
 		config.ContractsAvailable = filepath.Join(defaultDir, "contracts-available")

@@ -8,8 +8,8 @@ import (
 	"os/signal"
 
 	"github.com/pkg/errors"
-	"lukechampine.com/us/renter"
-	"lukechampine.com/us/renter/renterutil"
+	"github.com/jrama/us/renter"
+	"github.com/jrama/us/renter/renterutil"
 )
 
 func serve(contractDir, metaDir, addr string) error {

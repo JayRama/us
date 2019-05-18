@@ -23,7 +23,7 @@ You will need a synchronized `siad` that you can connect to, and a way to
 communicate with it -- preferably `siac`, although `curl` will also suffice.
 **`siad` must be v1.3.5 or higher.**
 
-First, identify the port that `siad` is listening on. We will assume `:9980`.
+First, identify the port that `siad` is listening on. We will assume `:4280`.
 If you do not already have a wallet with coins in it, create one like so:
 
 ```bash
@@ -44,11 +44,11 @@ provided below:
 
 ```toml
 # API port of siad.
-# OPTIONAL. Default: "localhost:9980"
+# OPTIONAL. Default: "localhost:4280"
 siad_addr = "localhost:1993"
 
 # API password of siad. If not defined, user will attempt to read the standard
-# siad password file, ~/.sia/apipassword.
+# siad password file, ~/.siaprime/apipassword.
 # OPTIONAL. Default: ""
 siad_password = "foobarbaz"
 

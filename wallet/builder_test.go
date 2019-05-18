@@ -3,7 +3,7 @@ package wallet
 import (
 	"testing"
 
-	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/siaprime/SiaPrime/types"
 )
 
 func BenchmarkSumOutputs(b *testing.B) {

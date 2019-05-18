@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"gitlab.com/NebulousLabs/Sia/types"
-	"lukechampine.com/us/wallet"
+	"gitlab.com/siaprime/SiaPrime/types"
+	"github.com/jrama/us/wallet"
 )
 
 func vanity(seed wallet.Seed, substr string) {
